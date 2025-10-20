@@ -1,5 +1,5 @@
 """
-Database models and connection management for AdventHealth Research Platform.
+Database models and connection management for ContosoHealth Research Platform.
 Uses SQLAlchemy ORM with Azure SQL Database.
 """
 

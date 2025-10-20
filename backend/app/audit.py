@@ -1,5 +1,5 @@
 """
-Audit logging middleware for AdventHealth Research Platform.
+Audit logging middleware for ContosoHealth Research Platform.
 Logs all API requests for compliance (7-year retention).
 """
 

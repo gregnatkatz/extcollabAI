@@ -57,7 +57,7 @@ class ExportService:
             zip_file.writestr(f"{dataset_name}.csv", data)
             
             readme = f"""
-AdventHealth Research Platform - Data Export
+ContosoHealth Research Platform - Data Export
 
 Export Request ID: {request_id}
 Dataset: {dataset_name}
@@ -70,7 +70,7 @@ IMPORTANT SECURITY NOTICE:
 - Delete after use or within 24 hours
 - Report any suspected data breach immediately
 
-For questions, contact: research-platform@adventhealth.com
+For questions, contact: research-platform@contosohealth.com
 """
             zip_file.writestr("README.txt", readme)
             
@@ -194,7 +194,7 @@ IMPORTANT:
 
 Reviewer Notes: {notes or 'None'}
 
-If you have any questions, contact: research-platform@adventhealth.com
+If you have any questions, contact: research-platform@contosohealth.com
 """
         elif status == "Rejected":
             subject = f"Export Request {request_number} Rejected"

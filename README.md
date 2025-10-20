@@ -1,10 +1,10 @@
-# AdventHealth Research Platform
+# ContosoHealth Research Platform
 
 A secure, enterprise-grade research collaboration platform for cardiovascular studies, integrating Microsoft Fabric, Azure ML Studio, and Azure AI Foundry with a unified dark-theme interface.
 
 ## 🎯 Overview
 
-The AdventHealth Research Platform provides a streamlined interface for data scientists and researchers to access computational resources, manage datasets, execute notebooks, deploy ML models, and collaborate on cardiovascular research projects—all while maintaining strict PHI data security and compliance.
+The ContosoHealth Research Platform provides a streamlined interface for data scientists and researchers to access computational resources, manage datasets, execute notebooks, deploy ML models, and collaborate on cardiovascular research projects—all while maintaining strict PHI data security and compliance.
 
 **Live Demo**: https://research-portal-2fbfvjbt.devinapps.com
 
@@ -21,11 +21,25 @@ The AdventHealth Research Platform provides a streamlined interface for data sci
 
 ## 📸 Complete Demo Walkthrough
 
-### 1. Dashboard - Project Overview
+### 1. External User Login
+
+External researchers can log in with their institutional credentials to access ContosoHealth research data through a secure B2B authentication flow.
+
+![External Login](screenshots/01-external-login.png)
+
+**Features shown:**
+- ContosoHealth branding
+- External researcher login form
+- Institution-based authentication
+- Secure access request workflow
+
+---
+
+### 2. Dashboard - Project Overview
 
 The main dashboard displays all active cardiovascular research projects with key metrics including notebooks, datasets, models, and recent activity.
 
-![Dashboard](screenshots/01-dashboard.png)
+![Dashboard](screenshots/02-dashboard.png)
 
 **Features shown:**
 - Project cards with PI information
@@ -35,7 +49,7 @@ The main dashboard displays all active cardiovascular research projects with key
 
 ---
 
-### 2. Notebooks - Multi-Language Support (Python, R, Scala)
+### 3. Project Notebooks - Multi-Language Support (Python, R, Scala)
 
 The platform supports Python, R, and Scala notebooks through Microsoft Fabric integration, enabling data scientists to use their preferred tools. Each language has executable code with dedicated "Run" buttons.
 
@@ -87,11 +101,31 @@ Execute Scala/Spark notebooks for large-scale data processing with real-time pip
 
 ---
 
-### 5. Datasets - PHI-Protected Data Access
+### 5. Microsoft Fabric Workspace - Professional Data Science Environment
+
+The integrated Fabric workspace provides a professional, JupyterHub-style interface for data science work with live notebook execution, resource monitoring, and security controls.
+
+![Fabric Workspace](screenshots/07-fabric-workspace.png)
+
+**Features shown:**
+- **Live notebook execution** with running cells and real-time outputs
+- **File browser** with notebooks, read-only data, and exportable results
+- **Resource monitoring** (CPU 34%, Memory 18.2/64 GB, Disk 124/500 GB)
+- **Security reminder** prominently displayed (data cannot be downloaded)
+- **Kernel status** and session management (2h 34m remaining)
+- **Code cells** with Python/pandas code and execution timestamps
+- **Visualization outputs** showing feature importance charts
+- **Export workflow** with PI approval requirement
+- **Quick help** with keyboard shortcuts
+- **Installed packages** list (pandas, numpy, scikit-learn, matplotlib, seaborn)
+
+---
+
+### 6. Datasets - PHI-Protected Data Access
 
 All cardiovascular datasets are PHI-protected with security levels and access controls. Researchers can request exports through the approval workflow.
 
-![Datasets](screenshots/03-datasets.png)
+![Datasets](screenshots/04-project-datasets.png)
 
 **Features shown:**
 - ECG Recordings Database (2.5M rows, 5.2 TB)
@@ -104,11 +138,11 @@ All cardiovascular datasets are PHI-protected with security levels and access co
 
 ---
 
-### 6. ML Models - H100 GPU Deployment
+### 7. ML Models - H100 GPU Deployment
 
 Deployed machine learning models with real-time performance metrics, GPU utilization, and accuracy tracking.
 
-![Models](screenshots/04-models.png)
+![Models](screenshots/05-project-models.png)
 
 **Features shown:**
 - AFib Detection LSTM v2.3 (4 H100 GPUs, 42ms latency, 96% accuracy)
@@ -121,11 +155,11 @@ Deployed machine learning models with real-time performance metrics, GPU utiliza
 
 ---
 
-### 7. Activity Feed - Audit Trail
+### 8. Activity Feed - Audit Trail
 
 Complete audit trail of all research activities including notebook executions, model training, dataset access, and export requests.
 
-![Activity](screenshots/05-activity.png)
+![Activity](screenshots/06-project-activity.png)
 
 **Features shown:**
 - Chronological activity log
@@ -136,7 +170,7 @@ Complete audit trail of all research activities including notebook executions, m
 
 ---
 
-### 8. Real-Time Inference Execution
+### 9. Real-Time Inference Execution
 
 Execute inference on H100 GPUs directly from the platform with real-time results showing predictions, confidence scores, and latency metrics.
 
@@ -156,7 +190,7 @@ Execute inference on H100 GPUs directly from the platform with real-time results
 
 ---
 
-### 9. Results Export Dialog - Secure Export Workflow
+### 10. Results Export Dialog - Secure Export Workflow
 
 Request export of analysis results (NOT raw PHI data) including model predictions, statistical summaries, and visualizations. All exports require PI approval.
 
@@ -175,7 +209,7 @@ Request export of analysis results (NOT raw PHI data) including model prediction
 
 ---
 
-### 10. Export Requests - Approval Workflow
+### 11. Export Requests - Approval Workflow
 
 Track all data export requests with status, PI reviewer information, and download links for approved exports.
 
@@ -192,7 +226,7 @@ Track all data export requests with status, PI reviewer information, and downloa
 
 ---
 
-### 11. Notifications - Real-Time Updates
+### 12. Notifications - Real-Time Updates
 
 System notifications for export approvals, model training completion, team member additions, and other important events.
 
@@ -207,7 +241,7 @@ System notifications for export approvals, model training completion, team membe
 
 ---
 
-### 12. External Access Request (Legacy)
+### 13. External Access Request (Legacy)
 
 Request data exports with justification for PI approval. The system enforces the approval workflow for all PHI-protected data.
 
@@ -498,7 +532,7 @@ export const msalConfig: Configuration = {
   auth: {
     clientId: process.env.VITE_CLIENT_ID,
     authority: 'https://login.microsoftonline.com/your-tenant-id',
-    redirectUri: 'https://research.adventhealth.com',
+    redirectUri: 'https://research.contosohealth.com',
   }
 };
 ```
@@ -555,16 +589,10 @@ fly deploy
 
 See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
 
-## 🤝 Contributing
-
-This is a private research platform for AdventHealth. For questions or support, contact:
-- **Project Lead**: Dr. Sarah Smith (dr.smith@adventhealth.com)
-- **Technical Support**: research-platform@adventhealth.com
-
 ## 📄 License
 
-Proprietary - AdventHealth Research Platform
-© 2024 AdventHealth. All rights reserved.
+Proprietary - ContosoHealth Research Platform
+© 2024 ContosoHealth. All rights reserved.
 
 ## 🔗 Links
 
@@ -572,7 +600,3 @@ Proprietary - AdventHealth Research Platform
 - **Backend API**: https://app-tiouegnz.fly.dev
 - **API Documentation**: https://app-tiouegnz.fly.dev/docs
 - **Devin Session**: https://app.devin.ai/sessions/2e347798f7e842269122e54741b5d338
-
----
-
-**Built with ❤️ for cardiovascular research at AdventHealth**

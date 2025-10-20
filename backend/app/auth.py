@@ -1,5 +1,5 @@
 """
-Authentication and authorization middleware for AdventHealth Research Platform.
+Authentication and authorization middleware for ContosoHealth Research Platform.
 Implements Entra ID token validation and RBAC.
 """
 
@@ -39,10 +39,10 @@ def verify_token(token: str) -> dict:
     if MOCK_AUTH_MODE:
         return {
             "oid": "user-001",
-            "preferred_username": "dr.smith@adventhealth.com",
+            "preferred_username": "dr.smith@contosohealth.com",
             "name": "Dr. Sarah Smith",
             "roles": ["PI", "Researcher"],
-            "institution": "AdventHealth Orlando"
+            "institution": "ContosoHealth Orlando"
         }
     
     try:

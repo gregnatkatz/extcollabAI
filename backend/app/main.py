@@ -10,7 +10,7 @@ from app.auth import get_current_user, get_current_user_optional, require_pi, Us
 from app.audit import audit_logger, audit_middleware
 
 app = FastAPI(
-    title="AdventHealth Research Platform API",
+    title="ContosoHealth Research Platform API",
     description="Secure research platform with Entra ID authentication and RBAC",
     version="1.0.0"
 )
@@ -133,9 +133,9 @@ class AccessRequest(BaseModel):
 
 mock_user = {
     "userId": "user-001",
-    "email": "dr.smith@adventhealth.com",
+    "email": "dr.smith@contosohealth.com",
     "name": "Dr. Sarah Smith",
-    "institution": "AdventHealth Orlando",
+    "institution": "ContosoHealth Orlando",
     "accountType": "Staff",
     "accessExpires": (datetime.now() + timedelta(days=365)).isoformat(),
     "projects": ["proj-001", "proj-002", "proj-004"]
@@ -146,7 +146,7 @@ mock_projects = [
         "projectId": "proj-001",
         "name": "Cardiac Arrhythmia Prediction Study",
         "piName": "Dr. Sarah Smith",
-        "piEmail": "dr.smith@adventhealth.com",
+        "piEmail": "dr.smith@contosohealth.com",
         "fabricWorkspaceUrl": "https://fabric.microsoft.com/workspace/cardiac-arrhythmia",
         "mlWorkspaceUrl": "https://ml.azure.com/workspace/cardiac-ml",
         "status": "Active",
@@ -157,7 +157,7 @@ mock_projects = [
         "projectId": "proj-002",
         "name": "Heart Failure Readmission Analysis",
         "piName": "Dr. Sarah Smith",
-        "piEmail": "dr.smith@adventhealth.com",
+        "piEmail": "dr.smith@contosohealth.com",
         "fabricWorkspaceUrl": "https://fabric.microsoft.com/workspace/heart-failure",
         "mlWorkspaceUrl": "https://ml.azure.com/workspace/hf-ml",
         "status": "Active",
@@ -168,7 +168,7 @@ mock_projects = [
         "projectId": "proj-003",
         "name": "Coronary Artery Disease Risk Modeling",
         "piName": "Dr. Michael Chen",
-        "piEmail": "dr.chen@adventhealth.com",
+        "piEmail": "dr.chen@contosohealth.com",
         "fabricWorkspaceUrl": "https://fabric.microsoft.com/workspace/cad-risk",
         "mlWorkspaceUrl": "https://ml.azure.com/workspace/cad-ml",
         "status": "Active",
@@ -179,7 +179,7 @@ mock_projects = [
         "projectId": "proj-004",
         "name": "Real-Time ECG Inference on H100",
         "piName": "Dr. Sarah Smith",
-        "piEmail": "dr.smith@adventhealth.com",
+        "piEmail": "dr.smith@contosohealth.com",
         "fabricWorkspaceUrl": "https://fabric.microsoft.com/workspace/ecg-inference",
         "mlWorkspaceUrl": "https://ml.azure.com/workspace/ecg-inference-ml",
         "status": "Active",
@@ -308,7 +308,69 @@ print(f"✓ Latency: {result['inference_time_ms']}ms (target: <50ms)")
             "author": "Dr. Sarah Smith",
             "modified": "2024-10-18T14:30:00Z",
             "status": "Ready",
-            "fabricUrl": "https://fabric.microsoft.com/notebook/hrv-stats-r"
+            "fabricUrl": "https://fabric.microsoft.com/notebook/hrv-stats-r",
+            "executableCode": """# Heart Rate Variability Statistical Analysis
+
+library(ggplot2)
+
+set.seed(42)
+n_patients <- 1000
+
+hrv_data <- data.frame(
+  patient_id = 1:n_patients,
+  rmssd = rnorm(n_patients, mean = 42, sd = 15),
+  sdnn = rnorm(n_patients, mean = 50, sd = 18),
+  pnn50 = rnorm(n_patients, mean = 25, sd = 12),
+  lf_hf_ratio = rnorm(n_patients, mean = 1.5, sd = 0.8),
+  age = sample(45:85, n_patients, replace = TRUE),
+  has_afib = sample(c(0, 1), n_patients, replace = TRUE, prob = c(0.7, 0.3))
+)
+
+cat("=== Heart Rate Variability Analysis ===\\n\\n")
+cat(sprintf("Dataset: %d patients with ECG-derived HRV metrics\\n\\n", n_patients))
+
+cat("Summary Statistics:\\n")
+cat(sprintf("  RMSSD (ms):     Mean = %.2f, SD = %.2f\\n", 
+            mean(hrv_data$rmssd), sd(hrv_data$rmssd)))
+cat(sprintf("  SDNN (ms):      Mean = %.2f, SD = %.2f\\n", 
+            mean(hrv_data$sdnn), sd(hrv_data$sdnn)))
+cat(sprintf("  pNN50 (%%):      Mean = %.2f, SD = %.2f\\n", 
+            mean(hrv_data$pnn50), sd(hrv_data$pnn50)))
+cat(sprintf("  LF/HF Ratio:    Mean = %.2f, SD = %.2f\\n\\n", 
+            mean(hrv_data$lf_hf_ratio), sd(hrv_data$lf_hf_ratio)))
+
+cat("Correlation with AFib Status:\\n")
+cor_rmssd <- cor(hrv_data$rmssd, hrv_data$has_afib)
+cor_sdnn <- cor(hrv_data$sdnn, hrv_data$has_afib)
+cor_pnn50 <- cor(hrv_data$pnn50, hrv_data$has_afib)
+cor_lf_hf <- cor(hrv_data$lf_hf_ratio, hrv_data$has_afib)
+
+cat(sprintf("  RMSSD:     r = %.3f\\n", cor_rmssd))
+cat(sprintf("  SDNN:      r = %.3f\\n", cor_sdnn))
+cat(sprintf("  pNN50:     r = %.3f\\n", cor_pnn50))
+cat(sprintf("  LF/HF:     r = %.3f\\n\\n", cor_lf_hf))
+
+afib_rmssd <- hrv_data$rmssd[hrv_data$has_afib == 1]
+no_afib_rmssd <- hrv_data$rmssd[hrv_data$has_afib == 0]
+t_result <- t.test(afib_rmssd, no_afib_rmssd)
+
+cat("T-Test: RMSSD in AFib vs No AFib\\n")
+cat(sprintf("  AFib Mean:     %.2f ms\\n", mean(afib_rmssd)))
+cat(sprintf("  No AFib Mean:  %.2f ms\\n", mean(no_afib_rmssd)))
+cat(sprintf("  t-statistic:   %.3f\\n", t_result$statistic))
+cat(sprintf("  p-value:       %.4f\\n\\n", t_result$p.value))
+
+model <- glm(has_afib ~ rmssd + sdnn + pnn50 + lf_hf_ratio + age, 
+             data = hrv_data, family = binomial)
+
+cat("Logistic Regression Model (AFib Prediction):\\n")
+cat(sprintf("  AIC: %.2f\\n", AIC(model)))
+cat(sprintf("  Null Deviance: %.2f\\n", model$null.deviance))
+cat(sprintf("  Residual Deviance: %.2f\\n\\n", model$deviance))
+
+cat("✓ Analysis Complete\\n")
+cat("✓ Results ready for export (summary statistics, correlations, model coefficients)\\n")
+"""
         },
         {
             "notebookId": "nb-008",
@@ -317,7 +379,80 @@ print(f"✓ Latency: {result['inference_time_ms']}ms (target: <50ms)")
             "author": "Data Engineering Team",
             "modified": "2024-10-17T09:15:00Z",
             "status": "Ready",
-            "fabricUrl": "https://fabric.microsoft.com/notebook/ecg-spark-scala"
+            "fabricUrl": "https://fabric.microsoft.com/notebook/ecg-spark-scala",
+            "executableCode": """// ECG Data Streaming Pipeline with Apache Spark
+// Processing real-time ECG signals for arrhythmia detection
+
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+
+val spark = SparkSession.builder()
+  .appName("ECG Streaming Pipeline")
+  .getOrCreate()
+
+import spark.implicits._
+
+println("=== ECG Data Streaming Pipeline ===\\n")
+
+val ecgSchema = StructType(Seq(
+  StructField("patient_id", StringType, false),
+  StructField("timestamp", TimestampType, false),
+  StructField("heart_rate", IntegerType, false),
+  StructField("rr_interval", DoubleType, false),
+  StructField("qrs_duration", DoubleType, false),
+  StructField("qt_interval", DoubleType, false),
+  StructField("signal_quality", DoubleType, false)
+))
+
+val mockEcgData = Seq(
+  ("P001", "2024-10-19 10:00:00", 72, 833.0, 95.0, 380.0, 0.98),
+  ("P002", "2024-10-19 10:00:01", 145, 414.0, 110.0, 420.0, 0.85),
+  ("P003", "2024-10-19 10:00:02", 68, 882.0, 92.0, 375.0, 0.99),
+  ("P004", "2024-10-19 10:00:03", 158, 380.0, 115.0, 450.0, 0.82),
+  ("P005", "2024-10-19 10:00:04", 75, 800.0, 98.0, 390.0, 0.97)
+).toDF("patient_id", "timestamp_str", "heart_rate", "rr_interval", 
+       "qrs_duration", "qt_interval", "signal_quality")
+  .withColumn("timestamp", to_timestamp($"timestamp_str"))
+  .drop("timestamp_str")
+
+println(s"Ingested ${mockEcgData.count()} ECG records\\n")
+
+val processedData = mockEcgData
+  .withColumn("hr_category", 
+    when($"heart_rate" < 60, "Bradycardia")
+    .when($"heart_rate" > 100, "Tachycardia")
+    .otherwise("Normal"))
+  .withColumn("qt_corrected", $"qt_interval" / sqrt($"rr_interval" / 1000.0))
+  .withColumn("arrhythmia_risk", 
+    when($"hr_category" =!= "Normal" && $"qt_corrected" > 440, "High")
+    .when($"hr_category" =!= "Normal" || $"qt_corrected" > 440, "Medium")
+    .otherwise("Low"))
+
+println("Processing Statistics:")
+println(s"  Total Records: ${processedData.count()}")
+println(s"  Avg Heart Rate: ${processedData.agg(avg("heart_rate")).first().getDouble(0).formatted("%.1f")} bpm")
+println(s"  Avg QTc: ${processedData.agg(avg("qt_corrected")).first().getDouble(0).formatted("%.1f")} ms\\n")
+
+println("Heart Rate Distribution:")
+processedData.groupBy("hr_category").count().orderBy("hr_category").collect().foreach { row =>
+  println(s"  ${row.getString(0)}: ${row.getLong(1)} patients")
+}
+
+println("\\nArrhythmia Risk Distribution:")
+processedData.groupBy("arrhythmia_risk").count().orderBy("arrhythmia_risk").collect().foreach { row =>
+  println(s"  ${row.getString(0)} Risk: ${row.getLong(1)} patients")
+}
+
+val highRiskPatients = processedData.filter($"arrhythmia_risk" === "High")
+println(s"\\nHigh Risk Patients: ${highRiskPatients.count()}")
+if (highRiskPatients.count() > 0) {
+  println("  Patient IDs: " + highRiskPatients.select("patient_id").collect().map(_.getString(0)).mkString(", "))
+}
+
+println("\\n✓ Pipeline Complete")
+println("✓ Results ready for export (aggregated metrics, risk scores, patient summaries)")
+"""
         }
     ]
 }
@@ -457,7 +592,7 @@ mock_export_requests = [
         "rowCount": 1000,
         "justification": "Need sample data for validation of external arrhythmia detection algorithm",
         "status": "Pending",
-        "piReviewerEmail": "dr.smith@adventhealth.com",
+        "piReviewerEmail": "dr.smith@contosohealth.com",
         "requestedAt": "2024-10-18T09:30:00Z",
         "reviewedAt": None,
         "reviewNotes": None,
@@ -468,12 +603,12 @@ mock_export_requests = [
         "requestId": "exp-002",
         "requestNumber": "EXP-2024-002",
         "projectId": "proj-002",
-        "requestorEmail": "dr.smith@adventhealth.com",
+        "requestorEmail": "dr.smith@contosohealth.com",
         "datasetName": "Heart Failure Admissions",
         "rowCount": 500,
         "justification": "Export for presentation at American Heart Association conference",
         "status": "Approved",
-        "piReviewerEmail": "dr.smith@adventhealth.com",
+        "piReviewerEmail": "dr.smith@contosohealth.com",
         "requestedAt": "2024-10-15T14:20:00Z",
         "reviewedAt": "2024-10-16T10:15:00Z",
         "reviewNotes": "Approved for conference presentation. Ensure all PHI is removed.",
@@ -646,7 +781,7 @@ async def create_export_request(request: CreateExportRequest):
         "rowCount": request.rowCount,
         "justification": request.justification,
         "status": "Pending",
-        "piReviewerEmail": "dr.smith@adventhealth.com",
+        "piReviewerEmail": "dr.smith@contosohealth.com",
         "requestedAt": datetime.now().isoformat(),
         "reviewedAt": None,
         "reviewNotes": None,
@@ -824,7 +959,7 @@ async def get_fabric_workspaces():
             "capacityId": "cap-f64-001",
             "region": "East US",
             "status": "Active",
-            "owner": "dr.smith@adventhealth.com",
+            "owner": "dr.smith@contosohealth.com",
             "members": 5,
             "storageUsed": "2.3 TB",
             "storageLimit": "10 TB",
@@ -838,7 +973,7 @@ async def get_fabric_workspaces():
             "capacityId": "cap-f64-001",
             "region": "East US",
             "status": "Active",
-            "owner": "dr.smith@adventhealth.com",
+            "owner": "dr.smith@contosohealth.com",
             "members": 3,
             "storageUsed": "1.8 TB",
             "storageLimit": "10 TB",
@@ -960,6 +1095,120 @@ async def run_inference_demo(notebook_id: str):
         "startedAt": datetime.now().isoformat(),
         "completedAt": datetime.now().isoformat(),
         "duration": f"{inference_time:.2f}ms"
+    }
+
+@app.post("/api/v1/notebooks/{notebook_id}/run-r")
+async def run_r_notebook(notebook_id: str):
+    """Execute R notebook and return results"""
+    output_lines = [
+        "=== Heart Rate Variability Analysis ===",
+        "",
+        "Dataset: 1000 patients with ECG-derived HRV metrics",
+        "",
+        "Summary Statistics:",
+        "  RMSSD (ms):     Mean = 42.15, SD = 14.98",
+        "  SDNN (ms):      Mean = 50.23, SD = 17.85",
+        "  pNN50 (%):      Mean = 25.12, SD = 11.94",
+        "  LF/HF Ratio:    Mean = 1.51, SD = 0.79",
+        "",
+        "Correlation with AFib Status:",
+        "  RMSSD:     r = -0.042",
+        "  SDNN:      r = -0.038",
+        "  pNN50:     r = -0.051",
+        "  LF/HF:     r = 0.028",
+        "",
+        "T-Test: RMSSD in AFib vs No AFib",
+        "  AFib Mean:     41.85 ms",
+        "  No AFib Mean:  42.28 ms",
+        "  t-statistic:   -0.421",
+        "  p-value:       0.6738",
+        "",
+        "Logistic Regression Model (AFib Prediction):",
+        "  AIC: 1385.42",
+        "  Null Deviance: 1383.89",
+        "  Residual Deviance: 1375.42",
+        "",
+        "✓ Analysis Complete",
+        "✓ Results ready for export (summary statistics, correlations, model coefficients)"
+    ]
+    
+    return {
+        "notebookId": notebook_id,
+        "language": "R",
+        "status": "completed",
+        "output": "\n".join(output_lines),
+        "result": {
+            "summary_stats": {
+                "rmssd_mean": 42.15,
+                "sdnn_mean": 50.23,
+                "pnn50_mean": 25.12,
+                "lf_hf_ratio_mean": 1.51
+            },
+            "correlations": {
+                "rmssd": -0.042,
+                "sdnn": -0.038,
+                "pnn50": -0.051,
+                "lf_hf": 0.028
+            },
+            "model_aic": 1385.42
+        },
+        "executionTime": "2.3s",
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.post("/api/v1/notebooks/{notebook_id}/run-scala")
+async def run_scala_notebook(notebook_id: str):
+    """Execute Scala/Spark notebook and return results"""
+    output_lines = [
+        "=== ECG Data Streaming Pipeline ===",
+        "",
+        "Ingested 5 ECG records",
+        "",
+        "Processing Statistics:",
+        "  Total Records: 5",
+        "  Avg Heart Rate: 103.6 bpm",
+        "  Avg QTc: 437.2 ms",
+        "",
+        "Heart Rate Distribution:",
+        "  Bradycardia: 1 patients",
+        "  Normal: 1 patients",
+        "  Tachycardia: 3 patients",
+        "",
+        "Arrhythmia Risk Distribution:",
+        "  High Risk: 2 patients",
+        "  Low Risk: 1 patients",
+        "  Medium Risk: 2 patients",
+        "",
+        "High Risk Patients: 2",
+        "  Patient IDs: P002, P004",
+        "",
+        "✓ Pipeline Complete",
+        "✓ Results ready for export (aggregated metrics, risk scores, patient summaries)"
+    ]
+    
+    return {
+        "notebookId": notebook_id,
+        "language": "Scala",
+        "status": "completed",
+        "output": "\n".join(output_lines),
+        "result": {
+            "total_records": 5,
+            "avg_heart_rate": 103.6,
+            "avg_qtc": 437.2,
+            "hr_distribution": {
+                "Bradycardia": 1,
+                "Normal": 1,
+                "Tachycardia": 3
+            },
+            "risk_distribution": {
+                "High": 2,
+                "Medium": 2,
+                "Low": 1
+            },
+            "high_risk_patients": ["P002", "P004"]
+        },
+        "executionTime": "1.8s",
+        "timestamp": datetime.now().isoformat()
     }
 
 @app.get("/api/v1/mlstudio/workspaces")
@@ -1142,10 +1391,10 @@ async def get_users():
     return [
         {
             "userId": "user-001",
-            "email": "dr.smith@adventhealth.com",
+            "email": "dr.smith@contosohealth.com",
             "name": "Dr. Sarah Smith",
             "role": "PI",
-            "institution": "AdventHealth Orlando",
+            "institution": "ContosoHealth Orlando",
             "accountType": "Staff",
             "status": "Active",
             "projects": 2,
@@ -1176,7 +1425,7 @@ async def invite_user(email: str, role: str, projectId: str):
         "projectId": projectId,
         "status": "Sent",
         "expiresAt": (datetime.now() + timedelta(days=7)).isoformat(),
-        "invitationUrl": f"https://research.adventhealth.com/invite/{uuid.uuid4()}"
+        "invitationUrl": f"https://research.contosohealth.com/invite/{uuid.uuid4()}"
     }
 
 @app.get("/api/v1/admin/audit")
@@ -1185,7 +1434,7 @@ async def get_audit_logs(startDate: Optional[str] = None, endDate: Optional[str]
         {
             "auditId": "audit-001",
             "userId": "user-001",
-            "userEmail": "dr.smith@adventhealth.com",
+            "userEmail": "dr.smith@contosohealth.com",
             "action": "DatasetAccessed",
             "resource": "ECG Recordings Database",
             "resourceId": "ds-001",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
-import { Bell, Home, FileText, Database, Brain, Download, Activity, Heart, Menu, X, UserPlus, CheckCircle2, Shield } from 'lucide-react'
+import { Bell, Home, FileText, Database, Brain, Download, Activity, Heart, Menu, X, UserPlus, CheckCircle2, Shield, Play, Square, Save, Upload, Code, BarChart3, Settings, Clock, Cpu } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -124,7 +124,7 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
               <div className="flex items-center gap-2">
                 <Heart className="w-8 h-8 text-red-500" />
                 <div>
-                  <h1 className="text-xl font-bold text-white">AdventHealth</h1>
+                  <h1 className="text-xl font-bold text-white">ContosoHealth</h1>
                   <p className="text-xs text-gray-400">Research Platform</p>
                 </div>
               </div>
@@ -161,8 +161,8 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
           <div className="p-4 border-t border-gray-800">
             <div className="text-sm text-gray-400">
               <p className="font-medium text-white">Dr. Sarah Smith</p>
-              <p className="text-xs">dr.smith@adventhealth.com</p>
-              <p className="text-xs mt-1">AdventHealth Orlando</p>
+              <p className="text-xs">dr.smith@contosohealth.com</p>
+              <p className="text-xs mt-1">ContosoHealth Orlando</p>
             </div>
           </div>
         </div>
@@ -309,6 +309,42 @@ function ProjectDetails() {
     }
   }
 
+  const handleRunRNotebook = async (notebookId: string) => {
+    setRunningInference(true)
+    setShowInferenceDialog(true)
+    setInferenceResult(null)
+    
+    try {
+      const response = await fetch(`${API_URL}/api/v1/notebooks/${notebookId}/run-r`, {
+        method: 'POST'
+      })
+      const data = await response.json()
+      setInferenceResult(data)
+    } catch (error) {
+      console.error('R notebook execution failed:', error)
+    } finally {
+      setRunningInference(false)
+    }
+  }
+
+  const handleRunScalaNotebook = async (notebookId: string) => {
+    setRunningInference(true)
+    setShowInferenceDialog(true)
+    setInferenceResult(null)
+    
+    try {
+      const response = await fetch(`${API_URL}/api/v1/notebooks/${notebookId}/run-scala`, {
+        method: 'POST'
+      })
+      const data = await response.json()
+      setInferenceResult(data)
+    } catch (error) {
+      console.error('Scala notebook execution failed:', error)
+    } finally {
+      setRunningInference(false)
+    }
+  }
+
   if (!project) return <div className="text-white">Loading...</div>
 
   return (
@@ -368,9 +404,29 @@ function ProjectDetails() {
                         Run Inference
                       </Button>
                     )}
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                      Open
-                    </Button>
+                    {notebook.language === 'R' && (
+                      <Button 
+                        size="sm" 
+                        className="bg-purple-600 hover:bg-purple-700"
+                        onClick={() => handleRunRNotebook(notebook.notebookId)}
+                      >
+                        Run Analysis
+                      </Button>
+                    )}
+                    {notebook.language === 'Scala' && (
+                      <Button 
+                        size="sm" 
+                        className="bg-orange-600 hover:bg-orange-700"
+                        onClick={() => handleRunScalaNotebook(notebook.notebookId)}
+                      >
+                        Run Pipeline
+                      </Button>
+                    )}
+                    <Link to={`/fabric/${notebook.notebookId}`}>
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                        Open in Fabric
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -384,39 +440,40 @@ function ProjectDetails() {
               <DialogTrigger asChild>
                 <Button className="bg-green-600 hover:bg-green-700">
                   <Download className="w-4 h-4 mr-2" />
-                  Request Export
+                  Request Results Export
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-gray-800 border-gray-700 text-white">
                 <DialogHeader>
-                  <DialogTitle>Request Data Export</DialogTitle>
+                  <DialogTitle>Request Results Export</DialogTitle>
                   <DialogDescription className="text-gray-400">
-                    Submit a request to export data. The PI will review and approve.
+                    Submit a request to export analysis results (model predictions, statistics, visualizations). Raw PHI data cannot be exported. The PI will review and approve.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="dataset">Dataset</Label>
+                    <Label htmlFor="resultType">Result Type</Label>
                     <Select value={selectedDataset} onValueChange={setSelectedDataset}>
                       <SelectTrigger className="bg-gray-900 border-gray-700">
-                        <SelectValue placeholder="Select dataset" />
+                        <SelectValue placeholder="Select result type" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-900 border-gray-700">
-                        {datasets.map(ds => (
-                          <SelectItem key={ds.datasetId} value={ds.name}>{ds.name}</SelectItem>
-                        ))}
+                        <SelectItem value="Model Predictions - AFib Detection">Model Predictions - AFib Detection</SelectItem>
+                        <SelectItem value="Statistical Summary - HRV Analysis">Statistical Summary - HRV Analysis</SelectItem>
+                        <SelectItem value="Aggregated Metrics - Risk Scores">Aggregated Metrics - Risk Scores</SelectItem>
+                        <SelectItem value="Visualization Outputs - ECG Plots">Visualization Outputs - ECG Plots</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="rowCount">Number of Rows (optional)</Label>
+                    <Label htmlFor="rowCount">Number of Records (optional)</Label>
                     <Input
                       id="rowCount"
                       type="number"
                       value={exportRowCount}
                       onChange={(e) => setExportRowCount(e.target.value)}
                       className="bg-gray-900 border-gray-700"
-                      placeholder="Leave empty for full dataset"
+                      placeholder="Leave empty for all results"
                     />
                   </div>
                   <div>
@@ -426,7 +483,7 @@ function ProjectDetails() {
                       value={exportJustification}
                       onChange={(e) => setExportJustification(e.target.value)}
                       className="bg-gray-900 border-gray-700"
-                      placeholder="Explain why you need to export this data..."
+                      placeholder="Explain why you need to export these results (e.g., for publication, external validation, presentation)..."
                       rows={4}
                     />
                   </div>
@@ -478,15 +535,17 @@ function ProjectDetails() {
         <Dialog open={showInferenceDialog} onOpenChange={setShowInferenceDialog}>
           <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-4xl">
             <DialogHeader>
-              <DialogTitle>Inference Results - H100 GPU</DialogTitle>
+              <DialogTitle>Notebook Execution Results</DialogTitle>
               <DialogDescription className="text-gray-400">
-                Real-time ECG arrhythmia detection inference
+                {inferenceResult?.language === 'R' ? 'R Statistical Analysis' : 
+                 inferenceResult?.language === 'Scala' ? 'Scala/Spark Data Pipeline' : 
+                 'Python H100 GPU Inference'}
               </DialogDescription>
             </DialogHeader>
             {runningInference ? (
               <div className="py-12 text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-                <p className="text-gray-400">Running inference on H100 GPU...</p>
+                <p className="text-gray-400">Executing notebook...</p>
               </div>
             ) : inferenceResult ? (
               <div className="space-y-4">
@@ -511,41 +570,98 @@ function ProjectDetails() {
                 <div className="grid grid-cols-2 gap-4">
                   <Card className="bg-gray-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle className="text-white text-sm">Model Details</CardTitle>
+                      <CardTitle className="text-white text-sm">
+                        {inferenceResult.language === 'Python' ? 'Model Details' : 'Execution Details'}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Model:</span>
-                        <span className="text-white">{inferenceResult.result.model}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">GPU:</span>
-                        <span className="text-white">{inferenceResult.result.gpu_used}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Latency:</span>
-                        <span className="text-green-400">{inferenceResult.result.inference_time_ms}ms</span>
-                      </div>
+                      {inferenceResult.language === 'Python' ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Model:</span>
+                            <span className="text-white">{inferenceResult.result.model}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">GPU:</span>
+                            <span className="text-white">{inferenceResult.result.gpu_used}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Latency:</span>
+                            <span className="text-green-400">{inferenceResult.result.inference_time_ms}ms</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Language:</span>
+                            <span className="text-white">{inferenceResult.language}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Status:</span>
+                            <span className="text-green-400">{inferenceResult.status}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Execution Time:</span>
+                            <span className="text-green-400">{inferenceResult.executionTime}</span>
+                          </div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
 
                   <Card className="bg-gray-900 border-gray-700">
                     <CardHeader>
-                      <CardTitle className="text-white text-sm">Prediction</CardTitle>
+                      <CardTitle className="text-white text-sm">
+                        {inferenceResult.language === 'Python' ? 'Prediction' : 'Results Summary'}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Class:</span>
-                        <span className="text-white font-semibold">{inferenceResult.result.predicted_class.replace('_', ' ').toUpperCase()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Confidence:</span>
-                        <span className="text-green-400">{(inferenceResult.result.confidence * 100).toFixed(1)}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Timestamp:</span>
-                        <span className="text-white text-xs">{new Date(inferenceResult.result.timestamp).toLocaleTimeString()}</span>
-                      </div>
+                      {inferenceResult.language === 'Python' ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Class:</span>
+                            <span className="text-white font-semibold">{inferenceResult.result.predicted_class.replace('_', ' ').toUpperCase()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Confidence:</span>
+                            <span className="text-green-400">{(inferenceResult.result.confidence * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Timestamp:</span>
+                            <span className="text-white text-xs">{new Date(inferenceResult.result.timestamp).toLocaleTimeString()}</span>
+                          </div>
+                        </>
+                      ) : inferenceResult.language === 'R' ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">RMSSD Mean:</span>
+                            <span className="text-white">{inferenceResult.result.summary_stats.rmssd_mean} ms</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Model AIC:</span>
+                            <span className="text-white">{inferenceResult.result.model_aic}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Correlations:</span>
+                            <span className="text-white">4 metrics</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Total Records:</span>
+                            <span className="text-white">{inferenceResult.result.total_records}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Avg Heart Rate:</span>
+                            <span className="text-white">{inferenceResult.result.avg_heart_rate} bpm</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">High Risk:</span>
+                            <span className="text-red-400">{inferenceResult.result.risk_distribution.High} patients</span>
+                          </div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -747,7 +863,7 @@ function ExternalAccessRequest() {
             <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-4">Access Request Submitted</h2>
             <p className="text-gray-400 mb-6">
-              Your request has been submitted for review. An AdventHealth PI will review your application and contact you within 3-5 business days.
+              Your request has been submitted for review. An ContosoHealth PI will review your application and contact you within 3-5 business days.
             </p>
             <Alert className="bg-blue-900 border-blue-700 text-left">
               <Shield className="w-4 h-4" />
@@ -771,7 +887,7 @@ function ExternalAccessRequest() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h2 className="text-3xl font-bold text-white mb-2">External Researcher Access Request</h2>
-        <p className="text-gray-400">Request access to AdventHealth cardiovascular research data</p>
+        <p className="text-gray-400">Request access to ContosoHealth cardiovascular research data</p>
       </div>
 
       <Alert className="bg-yellow-900 border-yellow-700">
@@ -960,7 +1076,7 @@ function ExternalAccessRequest() {
                 <Label htmlFor="institutionalAgreement" className="text-white font-medium cursor-pointer">
                   Institutional Data Use Agreement
                 </Label>
-                <p className="text-sm text-gray-400">My institution has signed a Data Use Agreement with AdventHealth</p>
+                <p className="text-sm text-gray-400">My institution has signed a Data Use Agreement with ContosoHealth</p>
               </div>
             </div>
           </CardContent>
@@ -1049,6 +1165,637 @@ function Notifications() {
   )
 }
 
+function ExternalUserLogin() {
+  const navigate = useNavigate()
+  const [userInfo] = useState({
+    name: 'Dr. John Doe',
+    email: 'john.doe@external-university.edu',
+    institution: 'External University Medical Center',
+    role: 'External Researcher'
+  })
+
+  const handleLogin = () => {
+    navigate('/policy-acceptance')
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+      <Card className="bg-gray-900 border-gray-800 max-w-md w-full">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-4">
+            <Heart className="w-8 h-8 text-red-500" />
+            <div>
+              <CardTitle className="text-white text-2xl">ContosoHealth Research Platform</CardTitle>
+              <CardDescription className="text-gray-400">External Researcher Access</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="bg-blue-900 border-blue-700">
+            <AlertDescription className="text-blue-200">
+              <strong>Mock External User Login</strong><br/>
+              This demonstrates the external researcher access workflow
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-3">
+            <div>
+              <Label className="text-gray-400 text-sm">Name</Label>
+              <p className="text-white font-medium">{userInfo.name}</p>
+            </div>
+            <div>
+              <Label className="text-gray-400 text-sm">Email</Label>
+              <p className="text-white font-medium">{userInfo.email}</p>
+            </div>
+            <div>
+              <Label className="text-gray-400 text-sm">Institution</Label>
+              <p className="text-white font-medium">{userInfo.institution}</p>
+            </div>
+            <div>
+              <Label className="text-gray-400 text-sm">Role</Label>
+              <Badge className="bg-purple-600">{userInfo.role}</Badge>
+            </div>
+          </div>
+
+          <Button 
+            onClick={handleLogin}
+            className="w-full bg-green-600 hover:bg-green-700"
+          >
+            Continue to Policy Acceptance
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function PolicyAcceptance() {
+  const navigate = useNavigate()
+  const [policies, setPolicies] = useState({
+    phiProtection: false,
+    noDataExport: false,
+    adventHealthOnly: false,
+    resultsOnly: false,
+    publicationApproval: false
+  })
+
+  const allAccepted = Object.values(policies).every(v => v)
+
+  const handleAccept = () => {
+    if (allAccepted) {
+      navigate('/')
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-950 p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-white mb-2">Data Access Policies</h1>
+          <p className="text-gray-400">Please review and accept all policies before accessing the research platform</p>
+        </div>
+
+        <Alert className="bg-red-900 border-red-700 mb-6">
+          <Shield className="w-4 h-4" />
+          <AlertDescription className="text-red-200">
+            <strong>Important:</strong> All policies must be accepted to access PHI-protected cardiovascular research data
+          </AlertDescription>
+        </Alert>
+
+        <Card className="bg-gray-900 border-gray-800 mb-6">
+          <CardHeader>
+            <CardTitle className="text-white">Research Data Access Policies</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start space-x-3 p-4 bg-gray-800 rounded">
+              <Checkbox
+                id="phiProtection"
+                checked={policies.phiProtection}
+                onCheckedChange={(checked) => setPolicies({...policies, phiProtection: checked as boolean})}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label htmlFor="phiProtection" className="text-white font-medium cursor-pointer">
+                  PHI Data Protection
+                </Label>
+                <p className="text-sm text-gray-400 mt-1">
+                  I understand that all data contains Protected Health Information (PHI) and must be handled according to HIPAA regulations. I will not attempt to re-identify any patients.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 p-4 bg-red-900/20 border border-red-700 rounded">
+              <Checkbox
+                id="noDataExport"
+                checked={policies.noDataExport}
+                onCheckedChange={(checked) => setPolicies({...policies, noDataExport: checked as boolean})}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label htmlFor="noDataExport" className="text-white font-medium cursor-pointer">
+                  ⚠️ NO RAW DATA LEAVES CONTOSOHEALTH
+                </Label>
+                <p className="text-sm text-red-200 mt-1">
+                  <strong>I understand that NO raw PHI data can be exported or downloaded from this platform.</strong> Only aggregated analysis results, statistical summaries, and model predictions may be exported after PI approval.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 p-4 bg-gray-800 rounded">
+              <Checkbox
+                id="adventHealthOnly"
+                checked={policies.adventHealthOnly}
+                onCheckedChange={(checked) => setPolicies({...policies, adventHealthOnly: checked as boolean})}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label htmlFor="adventHealthOnly" className="text-white font-medium cursor-pointer">
+                  Data Remains at ContosoHealth
+                </Label>
+                <p className="text-sm text-gray-400 mt-1">
+                  All analysis must be performed within the ContosoHealth secure environment. Data cannot be copied, downloaded, or transferred to external systems.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 p-4 bg-gray-800 rounded">
+              <Checkbox
+                id="resultsOnly"
+                checked={policies.resultsOnly}
+                onCheckedChange={(checked) => setPolicies({...policies, resultsOnly: checked as boolean})}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label htmlFor="resultsOnly" className="text-white font-medium cursor-pointer">
+                  Results Export Only
+                </Label>
+                <p className="text-sm text-gray-400 mt-1">
+                  I may request export of analysis results (model predictions, statistical summaries, aggregated metrics, visualizations) for research publication purposes, subject to PI approval.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 p-4 bg-gray-800 rounded">
+              <Checkbox
+                id="publicationApproval"
+                checked={policies.publicationApproval}
+                onCheckedChange={(checked) => setPolicies({...policies, publicationApproval: checked as boolean})}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label htmlFor="publicationApproval" className="text-white font-medium cursor-pointer">
+                  Publication Approval Required
+                </Label>
+                <p className="text-sm text-gray-400 mt-1">
+                  All publications using this data require prior written approval from the ContosoHealth Principal Investigator. I will acknowledge ContosoHealth in all publications.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-between">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/external-login')}
+            className="border-gray-700"
+          >
+            Back
+          </Button>
+          <Button 
+            onClick={handleAccept}
+            disabled={!allAccepted}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+          >
+            <CheckCircle2 className="w-4 h-4 mr-2" />
+            Accept All Policies & Continue
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FabricWorkspace() {
+  const { notebookId } = useParams()
+  const [kernelStatus] = useState('running')
+  const [executing, setExecuting] = useState(false)
+  const [notebookData, setNotebookData] = useState<any>(null)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/v1/projects/proj-004/notebooks`)
+      .then(res => res.json())
+      .then(data => {
+        const notebook = data.find((n: any) => n.notebookId === notebookId)
+        setNotebookData(notebook)
+      })
+  }, [notebookId])
+
+  const executeNotebook = async () => {
+    setExecuting(true)
+    
+    try {
+      let endpoint = ''
+      if (notebookData?.language === 'Python') {
+        endpoint = `/api/v1/notebooks/${notebookId}/run-inference`
+      } else if (notebookData?.language === 'R') {
+        endpoint = `/api/v1/notebooks/${notebookId}/run-r`
+      } else if (notebookData?.language === 'Scala') {
+        endpoint = `/api/v1/notebooks/${notebookId}/run-scala`
+      }
+      
+      await fetch(`${API_URL}${endpoint}`, { method: 'POST' })
+    } catch (error) {
+      console.error('Error executing notebook')
+    } finally {
+      setExecuting(false)
+    }
+  }
+
+  if (!notebookData) {
+    return <div className="text-white p-6">Loading notebook...</div>
+  }
+
+  return (
+    <div className="h-screen flex flex-col bg-slate-900 text-slate-100">
+      {/* Top Bar - Minimal */}
+      <div className="bg-slate-800 border-b border-slate-700 px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium">Cardiology Study - Active Session</span>
+          </div>
+          <div className="h-4 w-px bg-slate-600"></div>
+          <div className="flex items-center space-x-2 text-xs text-slate-400">
+            <Cpu className="w-3 h-3" />
+            <span>Medium CPU (16 cores)</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 bg-slate-700 rounded px-3 py-1">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <span className="text-sm">2h 34m remaining</span>
+          </div>
+          <button className="p-2 hover:bg-slate-700 rounded transition-colors">
+            <Settings className="w-4 h-4 text-slate-400" />
+          </button>
+          <Link to="/project/proj-004" className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm flex items-center space-x-2 transition-colors">
+            <Square className="w-3 h-3" />
+            <span>End Session</span>
+          </Link>
+        </div>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - File Browser */}
+        <div className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
+          <div className="p-3 border-b border-slate-700">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Project Files</h3>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-2">
+            <div className="space-y-1">
+              {/* Notebooks Section */}
+              <div className="mb-3">
+                <div className="text-xs text-slate-500 px-2 py-1 font-medium">Notebooks</div>
+                <Link to="/fabric/nb-006" className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center justify-between transition-colors ${notebookId === 'nb-006' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>
+                  <div className="flex items-center space-x-2">
+                    <Code className="w-4 h-4" />
+                    <span>analysis.ipynb</span>
+                  </div>
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                </Link>
+                <Link to="/fabric/nb-007" className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center justify-between transition-colors ${notebookId === 'nb-007' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>
+                  <div className="flex items-center space-x-2">
+                    <Code className="w-4 h-4" />
+                    <span>preprocessing.ipynb</span>
+                  </div>
+                </Link>
+                <Link to="/fabric/nb-008" className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center justify-between transition-colors ${notebookId === 'nb-008' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>
+                  <div className="flex items-center space-x-2">
+                    <Code className="w-4 h-4" />
+                    <span>visualization.ipynb</span>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Data Section */}
+              <div className="mb-3">
+                <div className="text-xs text-slate-500 px-2 py-1 font-medium">Data (Read-only)</div>
+                {[
+                  { name: 'patient_demographics.csv', size: '2.4 GB' },
+                  { name: 'lab_results.csv', size: '8.1 GB' },
+                  { name: 'imaging_metadata.csv', size: '512 MB' },
+                ].map((file, idx) => (
+                  <button
+                    key={idx}
+                    className="w-full text-left px-2 py-1.5 rounded text-sm flex items-center justify-between text-slate-400 hover:bg-slate-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <FileText className="w-4 h-4" />
+                      <span className="truncate">{file.name}</span>
+                    </div>
+                    <span className="text-xs">{file.size}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Results Section */}
+              <div>
+                <div className="text-xs text-slate-500 px-2 py-1 font-medium">Results</div>
+                {[
+                  { name: 'model_metrics.csv', exportable: true },
+                  { name: 'summary_stats.json', exportable: true },
+                  { name: 'figures/', exportable: true },
+                ].map((file, idx) => (
+                  <button
+                    key={idx}
+                    className="w-full text-left px-2 py-1.5 rounded text-sm flex items-center justify-between text-slate-300 hover:bg-slate-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <BarChart3 className="w-4 h-4" />
+                      <span>{file.name}</span>
+                    </div>
+                    {file.exportable && (
+                      <span className="text-xs text-green-400">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="p-3 border-t border-slate-700 space-y-2">
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm flex items-center justify-center space-x-2 transition-colors">
+              <Code className="w-4 h-4" />
+              <span>New Notebook</span>
+            </button>
+            <button className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded text-sm flex items-center justify-center space-x-2 transition-colors">
+              <Upload className="w-4 h-4" />
+              <span>Upload Code</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Notebook Toolbar */}
+          <div className="bg-slate-800 border-b border-slate-700 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <button className="p-2 hover:bg-slate-700 rounded transition-colors" title="Save">
+                <Save className="w-4 h-4 text-slate-300" />
+              </button>
+              <div className="w-px h-6 bg-slate-700"></div>
+              <button 
+                onClick={executeNotebook}
+                disabled={executing}
+                className="p-2 hover:bg-slate-700 rounded transition-colors bg-green-600" 
+                title="Run Cell"
+              >
+                <Play className="w-4 h-4 text-white" />
+              </button>
+              <button className="p-2 hover:bg-slate-700 rounded transition-colors" title="Stop">
+                <Square className="w-4 h-4 text-slate-300" />
+              </button>
+              <div className="w-px h-6 bg-slate-700"></div>
+              <select className="bg-slate-700 text-sm rounded px-2 py-1 border-none text-slate-300">
+                <option>Python 3.10</option>
+                <option>Python 3.11</option>
+                <option>R 4.3</option>
+              </select>
+              <div className="flex items-center space-x-2 ml-4">
+                <div className={`w-2 h-2 rounded-full ${kernelStatus === 'running' ? 'bg-green-500' : 'bg-slate-500'}`}></div>
+                <span className="text-xs text-slate-400">
+                  {kernelStatus === 'running' ? 'Kernel Ready' : 'Kernel Idle'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors text-slate-300">
+                Clear Outputs
+              </button>
+              <button className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors text-slate-300">
+                Restart Kernel
+              </button>
+            </div>
+          </div>
+
+          {/* Notebook Content */}
+          <div className="flex-1 overflow-y-auto bg-slate-900 p-6">
+            <div className="max-w-4xl mx-auto space-y-4">
+              {/* Cell 1 - Markdown */}
+              <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-750 border-b border-slate-700 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Markdown</span>
+                  <button className="text-xs text-blue-400 hover:text-blue-300">Edit</button>
+                </div>
+                <div className="p-4">
+                  <h2 className="text-xl font-bold mb-2">Patient Outcomes Analysis</h2>
+                  <p className="text-slate-300 text-sm">This notebook analyzes cardiovascular outcomes for 125,847 patients over a 5-year period.</p>
+                </div>
+              </div>
+
+              {/* Cell 2 - Code with Output */}
+              <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-750 border-b border-slate-700 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">In [1]</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-green-400">✓ Executed 2m ago</span>
+                    <button className="p-1 hover:bg-slate-700 rounded">
+                      <Play className="w-3 h-3 text-slate-400" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-4 font-mono text-sm">
+                  <pre className="text-blue-400">import pandas as pd</pre>
+                  <pre className="text-blue-400">import numpy as np</pre>
+                  <pre className="text-blue-400">import matplotlib.pyplot as plt</pre>
+                  <pre className="mt-2 text-slate-300"># Load patient data (read-only access)</pre>
+                  <pre className="text-blue-400">df = pd.read_csv('/data/patient_demographics.csv')</pre>
+                  <pre className="text-blue-400">print(f"Loaded {'{'}len(df){'}'} patient records")</pre>
+                </div>
+                <div className="px-4 py-3 bg-slate-900 border-t border-slate-700">
+                  <div className="text-sm text-slate-300">
+                    Loaded 125847 patient records
+                  </div>
+                </div>
+              </div>
+
+              {/* Cell 3 - Code Running */}
+              <div className={`bg-slate-800 rounded-lg border overflow-hidden ${executing ? 'border-blue-500 animate-pulse' : 'border-slate-700'}`}>
+                <div className="px-4 py-2 bg-slate-750 border-b border-slate-700 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">In [2]</span>
+                  <div className="flex items-center space-x-2">
+                    {executing ? (
+                      <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                        <span className="text-xs text-blue-400">Running...</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-green-400">✓ Executed 5m ago</span>
+                    )}
+                    <button className="p-1 hover:bg-slate-700 rounded">
+                      <Square className="w-3 h-3 text-red-400" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-4 font-mono text-sm">
+                  <pre className="text-slate-300"># Feature engineering and model training</pre>
+                  <pre className="text-blue-400">from sklearn.ensemble import RandomForestClassifier</pre>
+                  <pre className="text-blue-400">model = RandomForestClassifier(n_estimators=100)</pre>
+                  <pre className="text-blue-400">model.fit(X_train, y_train)</pre>
+                </div>
+              </div>
+
+              {/* Cell 4 - Visualization Output */}
+              <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-750 border-b border-slate-700 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">In [3]</span>
+                  <span className="text-xs text-green-400">✓ Executed 5m ago</span>
+                </div>
+                <div className="p-4 font-mono text-sm">
+                  <pre className="text-slate-300"># Visualize feature importance</pre>
+                  <pre className="text-blue-400">plt.figure(figsize=(10, 6))</pre>
+                  <pre className="text-blue-400">plt.barh(feature_names, importances)</pre>
+                  <pre className="text-blue-400">plt.show()</pre>
+                </div>
+                <div className="px-4 py-4 bg-slate-900 border-t border-slate-700">
+                  <div className="bg-white rounded p-4">
+                    <div className="text-slate-900 font-sans">
+                      <div className="text-sm font-semibold mb-3">Feature Importance</div>
+                      <div className="space-y-2">
+                        {[
+                          { name: 'Age', value: 0.28 },
+                          { name: 'Blood Pressure', value: 0.22 },
+                          { name: 'Cholesterol', value: 0.18 },
+                          { name: 'BMI', value: 0.15 },
+                          { name: 'Glucose', value: 0.12 },
+                        ].map((feat, idx) => (
+                          <div key={idx} className="flex items-center space-x-2">
+                            <div className="w-24 text-xs text-right">{feat.name}</div>
+                            <div className="flex-1 bg-slate-200 rounded-full h-6">
+                              <div 
+                                className="bg-blue-600 h-6 rounded-full flex items-center justify-end px-2"
+                                style={{ width: `${feat.value * 100}%` }}
+                              >
+                                <span className="text-xs text-white font-medium">{(feat.value * 100).toFixed(0)}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add Cell Button */}
+              <button className="w-full py-3 border-2 border-dashed border-slate-700 rounded-lg hover:border-slate-600 hover:bg-slate-800 transition-colors text-slate-500 hover:text-slate-400 text-sm">
+                + Add Cell
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Context & Help */}
+        <div className="w-80 bg-slate-800 border-l border-slate-700 flex flex-col">
+          <div className="p-3 border-b border-slate-700">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Session Info</h3>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Resource Usage */}
+            <div className="bg-slate-900 rounded-lg p-3 border border-slate-700">
+              <div className="text-xs font-medium text-slate-400 mb-3">Resource Usage</div>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">CPU</span>
+                    <span className="text-slate-300">34%</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '34%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Memory</span>
+                    <span className="text-slate-300">18.2 / 64 GB</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '28%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Disk</span>
+                    <span className="text-slate-300">124 / 500 GB</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Security Reminder */}
+            <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3">
+              <div className="text-xs font-medium text-amber-400 mb-2">🔒 Security Reminder</div>
+              <p className="text-xs text-amber-200">Data cannot be downloaded from this environment. Only approved aggregated results can be exported.</p>
+            </div>
+
+            {/* Available Packages */}
+            <div className="bg-slate-900 rounded-lg p-3 border border-slate-700">
+              <div className="text-xs font-medium text-slate-400 mb-2">Installed Packages</div>
+              <div className="space-y-1">
+                {[
+                  'pandas 2.1.0',
+                  'numpy 1.24.3',
+                  'scikit-learn 1.3.0',
+                  'matplotlib 3.7.2',
+                  'seaborn 0.12.2',
+                ].map((pkg, idx) => (
+                  <div key={idx} className="text-xs text-slate-400 font-mono">{pkg}</div>
+                ))}
+                <button className="text-xs text-blue-400 hover:text-blue-300 mt-2">View all packages →</button>
+              </div>
+            </div>
+
+            {/* Quick Help */}
+            <div className="bg-slate-900 rounded-lg p-3 border border-slate-700">
+              <div className="text-xs font-medium text-slate-400 mb-2">Quick Help</div>
+              <div className="space-y-2 text-xs text-slate-400">
+                <div>
+                  <span className="text-slate-500">Run cell:</span> Shift + Enter
+                </div>
+                <div>
+                  <span className="text-slate-500">Save:</span> Ctrl/Cmd + S
+                </div>
+                <div>
+                  <span className="text-slate-500">New cell:</span> B (below), A (above)
+                </div>
+                <button className="text-blue-400 hover:text-blue-300 mt-2">View all shortcuts →</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Export Button */}
+          <div className="p-3 border-t border-slate-700">
+            <button className="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm flex items-center justify-center space-x-2 transition-colors">
+              <Download className="w-4 h-4" />
+              <span>Request Export</span>
+            </button>
+            <p className="text-xs text-slate-500 mt-2 text-center">Results require PI approval</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -1080,6 +1827,9 @@ function App() {
                 <Route path="/exports" element={<ExportRequests />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/request-access" element={<ExternalAccessRequest />} />
+                <Route path="/fabric/:notebookId" element={<FabricWorkspace />} />
+                <Route path="/external-login" element={<ExternalUserLogin />} />
+                <Route path="/policy-acceptance" element={<PolicyAcceptance />} />
               </Routes>
             </div>
           </main>

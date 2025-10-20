@@ -1,5 +1,5 @@
 """
-Configuration management for AdventHealth Research Platform.
+Configuration management for ContosoHealth Research Platform.
 Loads settings from environment variables and Azure Key Vault in production.
 """
 
@@ -23,7 +23,7 @@ class Settings:
     
     ALLOWED_ORIGINS: list = os.getenv(
         "ALLOWED_ORIGINS",
-        "https://research.adventhealth.com,https://research-portal-2fbfvjbt.devinapps.com"
+        "https://research.contosohealth.com,https://research-portal-2fbfvjbt.devinapps.com"
     ).split(",")
     
     DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
@@ -43,7 +43,7 @@ class Settings:
     
     FOUNDRY_PROJECT_CONNECTION_STRING: Optional[str] = os.getenv("FOUNDRY_PROJECT_CONNECTION_STRING")
     
-    EMAIL_FROM_ADDRESS: str = os.getenv("EMAIL_FROM_ADDRESS", "noreply@adventhealth.com")
+    EMAIL_FROM_ADDRESS: str = os.getenv("EMAIL_FROM_ADDRESS", "noreply@contosohealth.com")
     SENDGRID_API_KEY: Optional[str] = os.getenv("SENDGRID_API_KEY")
     
     EXPORT_SAS_TOKEN_EXPIRY_HOURS: int = int(os.getenv("EXPORT_SAS_TOKEN_EXPIRY_HOURS", "24"))
