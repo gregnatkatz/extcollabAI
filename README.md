@@ -8,6 +8,19 @@ The ContosoHealth Research Platform provides a streamlined interface for data sc
 
 **Live Demo**: https://research-portal-2fbfvjbt.devinapps.com
 
+## 🔒 Secure Research Environment (SRE) Architecture
+
+The ContosoHealth platform is designed to implement Microsoft's **Secure Research Environment (SRE)** architecture for production deployment. This architecture ensures that sensitive PHI data never leaves the Azure environment while enabling collaborative research.
+
+**Key SRE Principles:**
+- **Network Isolation** - No internet access from compute resources, all traffic stays within Azure VNet
+- **Data Exfiltration Prevention** - Raw PHI data cannot be downloaded; only approved aggregated results
+- **Private Endpoints** - All Azure services (Fabric, ML Studio, SQL, Storage) accessed via private endpoints
+- **Managed Identities** - Service-to-service authentication without credentials
+- **PI Approval Workflow** - All data exports require Principal Investigator approval with time-limited access
+
+See **[SRE_ARCHITECTURE.md](SRE_ARCHITECTURE.md)** for complete architecture details, network diagrams, security controls, and deployment checklist.
+
 ## ✨ Key Features
 
 - **Unified Research Dashboard** - Single interface for all research projects
@@ -352,6 +365,7 @@ VITE_API_URL=http://localhost:8000
 
 ## 📚 Documentation
 
+- **[SRE_ARCHITECTURE.md](SRE_ARCHITECTURE.md)** - **NEW!** Secure Research Environment (SRE) architecture for production deployment
 - **[API_REFERENCE.md](API_REFERENCE.md)** - Complete API documentation with all 40+ endpoints
 - **[DEMO_GUIDE.md](DEMO_GUIDE.md)** - Detailed demo walkthrough with next steps
 - **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)** - How to connect real Azure services
